@@ -1,0 +1,15 @@
+.*.sw*
+.DS_Store
+*.iml
+/.idea
+
+/npm-debug.log
+/node_modules
+
+*.pid
+*.log
+
+/build
+/*.js
+/lib
+/bin

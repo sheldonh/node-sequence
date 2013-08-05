@@ -1,0 +1,13 @@
+{
+  "name": "sequence",
+  "version": "0.0.1",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-chmod": "~1.0.3",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.1",
+    "grunt-simple-mocha": "~0.4.0"
+  }
+}
