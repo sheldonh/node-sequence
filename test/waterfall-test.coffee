@@ -4,16 +4,24 @@ waterfall = require('waterfall')
 
 describe "waterfall", ->
 
-  it "calls back verbatim without any functions to sequence", (done) ->
-    waterfall "head", "body", "tail", [], (e, xs...) ->
+  it "calls back empty without any functions to sequence", (done) ->
+    waterfall (e, any) ->
       assert.ifError(e)
-      assert.deepEqual xs, ["head", "body", "tail"]
+      assert !any?
+      done()
+
+  it "calls back empty with an empty list of functions to sequence", (done) ->
+    waterfall [], (e, any) ->
+      assert.ifError(e)
+      assert !any?
       done()
 
   it "calls through with only one function to sequence", (done) ->
-    waterfall "head", "body", "tail", [(xs..., c) -> c(null, xs.join(''))], (e, xs...) ->
+    waterfall [
+      (c) -> c(null, "the", "key", "to", "wisdom")
+    ], (e, xs...) ->
       assert.ifError(e)
-      assert.deepEqual xs, ["headbodytail"]
+      assert.deepEqual xs, ["the", "key", "to", "wisdom"]
       done()
 
   it "sequences nullary functions", (done) ->
@@ -28,7 +36,8 @@ describe "waterfall", ->
       done()
 
   it "sequences unary functions", (done) ->
-    waterfall "head", [
+    waterfall [
+      (c) -> c(null, "head")
       (i, c) -> c(null, i + "body")
       (i, c) -> c(null, i + "tail")
     ], (e, x) ->
@@ -37,21 +46,22 @@ describe "waterfall", ->
       done()
 
   it "sequences variadic functions", (done) ->
-    waterfall "twin", "heads", [
-      (xs..., c) -> c(null, xs.join(''), "big", "scaly", "body")
-      (xs..., c) -> c(null, xs.join(''), "many", "tails")
+    waterfall [
+      (c) -> c(null, "twin", "heads")
+      (xs..., c) -> c(null, xs..., "big", "scaly", "body")
+      (xs..., c) -> c(null, xs..., "one tail")
     ], (e, xs...) ->
       assert.ifError e
-      assert.deepEqual xs, ["twinheadsbigscalybody", "many", "tails"]
+      assert.deepEqual xs, ["twin", "heads", "big", "scaly", "body", "one tail"]
       done()
 
   it "short circuits on error", (done) ->
     started = false
     ranFullCourse = false
-    waterfall "head", [
-      (xs..., c) -> started = true; c()
-      (xs..., c) -> c(new Error("Failed"))
-      (xs..., c) -> ranFullCourse = true; c(null, xs + "tail")
+    waterfall [
+      (c) -> started = true; c()
+      (c) -> c(new Error("Failed"))
+      (c) -> ranFullCourse = true; c(null, "the impossible response")
     ], (e, x) ->
       assert e?
       assert started
@@ -60,10 +70,16 @@ describe "waterfall", ->
       done()
 
   it "catches an error and calls it back", (done) ->
-    waterfall "head", [
-      (i, c) -> throw new Error("Failed")
+    started = false
+    ranFullCourse = false
+    waterfall [
+      (c) -> started = true; c()
+      (c) -> throw new Error("Failed")
+      (c) -> ranFullCourse = true; c(null, "the impossible response")
     ], (e, x) ->
       assert e?
+      assert started
+      assert !ranFullCourse
       assert !x?
       done()
 
