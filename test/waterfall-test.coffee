@@ -16,6 +16,17 @@ describe "waterfall", ->
       assert.deepEqual xs, ["headbodytail"]
       done()
 
+  it "sequences nullary functions", (done) ->
+    seen = {}
+    waterfall [
+      (c) -> seen.a = true; c()
+      (c) -> seen.b = true; c()
+      (c) -> seen.c = true; c()
+    ], (e, x) ->
+      assert.ifError(e)
+      assert.deepEqual seen, {a: true, b: true, c: true}
+      done()
+
   it "sequences unary functions", (done) ->
     waterfall "head", [
       (i, c) -> c(null, i + "body")
